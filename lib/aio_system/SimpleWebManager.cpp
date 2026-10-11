@@ -18,7 +18,6 @@
 #include "SimpleOTAHandler.h"
 #include "TelemetryWebSocket.h"
 #include "AutosteerProcessor.h"
-#include "MotorDriverInterface.h"
 #include "NAVProcessor.h"
 #include "GNSSProcessor.h"
 #include "web_pages/CommonStyles.h"  // Common CSS
@@ -51,7 +50,6 @@ using namespace qindesign::network;
 // External references
 extern EncoderProcessor* encoderProcessor;
 extern GNSSProcessor gnssProcessor;
-extern MotorDriverInterface *motorPTR;
 
 SimpleWebManager::SimpleWebManager() :
     isRunning(false),
@@ -828,6 +826,12 @@ void SimpleWebManager::handleOTAUpload(EthernetClient& client) {
         return;
     }
 
+    // The upload loop below blocks the main loop for up to 30 s, so put the motor in a safe
+    // state now rather than leaving it at its last PWM for the whole transfer
+    if (steer) {
+        steer->emergencyStop();
+    }
+
     // OTA upload request received
     
     // Initialize OTA handler if needed
@@ -967,11 +971,8 @@ void SimpleWebManager::handleOTAUpload(EthernetClient& client) {
         LOG_INFO(EventSource::NETWORK, "Applying firmware update now");
 
         // Flash writes freeze outputs in their current state: put the motor in a safe state first
-        if (motorPTR) {
-            motorPTR->setPWM(0);
-            motorPTR->stop();
-            motorPTR->enable(false);
-        }
+        // (re-assert in case steering was re-engaged by AgOpenGPS during the upload)
+        AutosteerProcessor::getInstance()->emergencyStop();
         SimpleOTAHandler::applyUpdate();
     } else {
         const char* error = SimpleOTAHandler::getError();

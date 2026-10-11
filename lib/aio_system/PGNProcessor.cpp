@@ -54,8 +54,9 @@ void PGNProcessor::processPGN(const uint8_t* data, size_t len, const IPAddress& 
             return;
         }
 
-        // Declared payload length must match what was received (prevents size_t underflow/over-read)
-        if (data[4] != len - 6)
+        // Drop packets that claim more payload than arrived (prevents over-read); a length byte
+        // smaller than the datagram is tolerated
+        if (data[4] > len - 6)
         {
             return;
         }

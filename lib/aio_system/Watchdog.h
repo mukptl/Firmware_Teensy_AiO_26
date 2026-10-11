@@ -26,8 +26,8 @@ inline void feed() {
     WDOG1_WSR = 0xAAAA;
 }
 
-// Timeout in half-second steps minus one: 1 = 1.0 s
-inline void begin(uint8_t wt = 1) {
+// Timeout = (wt + 1) * 0.5 s: 7 = 4 s
+inline void begin(uint8_t wt = 7) {
     WDOG1_WCR = (uint16_t)(((uint16_t)wt << 8) | WCR_WDE | WCR_SRS | WCR_WDA);
     feed();
 }

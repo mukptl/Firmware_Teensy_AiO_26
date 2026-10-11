@@ -596,8 +596,8 @@ void setup()
   
   LOG_INFO(EventSource::SYSTEM, "=== System Ready ===");
 
-  // Start the hardware watchdog last, once all blocking init is done (1 s timeout)
-  Watchdog::begin(1);
+  // Start the hardware watchdog last, once all blocking init is done (4 s timeout; WT=7 -> (7+1)*0.5 s)
+  Watchdog::begin(7);
 }
 
 void loop()

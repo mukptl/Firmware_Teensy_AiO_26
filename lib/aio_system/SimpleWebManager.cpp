@@ -1256,6 +1256,7 @@ void SimpleWebManager::handleCANInfo(EthernetClient& client) {
             // Stream file in chunks to avoid loading entire file into RAM
             uint8_t buffer[512];
             while (file.available()) {
+                Watchdog::feed();
                 size_t bytesRead = file.read(buffer, sizeof(buffer));
                 if (bytesRead > 0) {
                     size_t written = client.write(buffer, bytesRead);
